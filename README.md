@@ -46,9 +46,9 @@ make logs
 
 ## To test the close gracefully
 execute this in 3 separate terminal:
-  1. make build start logs
-  2. make inject
-  3. make stop
+  1. `make build start logs`
+  2. `make inject`
+  3. `make stop-chat`
 
 log example with GOING_AWAY problem :
 ```

@@ -25,21 +25,18 @@ make inject-dev
 
 ## Packaging the application
 
-The application can be packaged using:
 ```shell script
 make build
 ```
 
 ## Start the docker
 
-The application can be packaged using:
 ```shell script
 make start
 ```
 
 ## Show docker logs
 
-The application can be packaged using:
 ```shell script
 make logs
 ```

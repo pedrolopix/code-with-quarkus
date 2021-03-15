@@ -8,22 +8,26 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 @ApplicationScoped
 @Slf4j
-public class ShutdownService {
+public class ShutdownService implements SignalHandler {
 
     private ChatSocketResource chatSocketResource;
     private long waitForEnd;
+    private final SignalHandler handler;
 
     @Inject
     public ShutdownService(final ChatSocketResource chatSocketResource,
-                           @ConfigProperty(name = "shutdown.waitforend", defaultValue = "1") final long waitForEnd) {
+        @ConfigProperty(name = "shutdown.waitforend", defaultValue = "1") final long waitForEnd) {
         this.chatSocketResource = chatSocketResource;
         this.waitForEnd = waitForEnd;
+        handler = Signal.handle(new Signal("TERM"), this);
     }
 
-    private void waitForCallsTermination() {
+    private void waitForConnectionsTermination() {
         long activeConnections = getActiveConnections();
         log.info("[shutdown] Connections active: {}", activeConnections);
         while (activeConnections > 0) {
@@ -48,8 +52,16 @@ public class ShutdownService {
     }
 
     void onStop(@Observes final ShutdownEvent ev) {
-        log.debug("[shutdown] Received a SIGTERM. The application is stopping...");
-        waitForCallsTermination();
+        log.debug("[shutdown] OnStop. The application is stopping...");
+        waitForConnectionsTermination();
     }
+
+    @Override
+    public void handle(final Signal signal) {
+        log.info("[shutdown] Detected signal {} {}", signal.getName(), signal.getNumber());
+        waitForConnectionsTermination();
+        handler.handle(signal);
+    }
+
 
 }
